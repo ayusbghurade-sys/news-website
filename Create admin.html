@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel - Upload News</title>
+  <style>
+    body { font-family: Arial; text-align:center; }
+
+    .drop-zone {
+      border: 2px dashed #999;
+      padding: 30px;
+      width: 400px;
+      margin: 20px auto;
+      cursor: pointer;
+    }
+
+    .drop-zone.dragover {
+      background-color: #f0f0f0;
+    }
+
+    img {
+      max-width: 100%;
+      margin-top: 10px;
+      display: none;
+    }
+
+    input, textarea {
+      width: 400px;
+      margin: 10px auto;
+      padding: 8px;
+      display:block;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: red;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Upload News</h2>
+
+<input type="text" id="title" placeholder="News Title">
+<textarea id="description" placeholder="News Description"></textarea>
+
+<div class="drop-zone" id="dropZone">
+  Drag & Drop Image Here or Click
+  <input type="file" id="fileInput" hidden>
+</div>
+
+<img id="preview">
+
+<button onclick="uploadNews()">Publish News</button>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+
+<script>
+  // 🔥 Replace with your Firebase config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_BUCKET",
+    appId: "YOUR_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const storage = firebase.storage();
+  const db = firebase.firestore();
+
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+  const preview = document.getElementById("preview");
+
+  let selectedFile;
+
+  dropZone.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", function() {
+    selectedFile = this.files[0];
+    preview.src = URL.createObjectURL(selectedFile);
+    preview.style.display = "block";
+  });
+
+  dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragover");
+  });
+
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    selectedFile = e.dataTransfer.files[0];
+    preview.src = URL.createObjectURL(selectedFile);
+    preview.style.display = "block";
+  });
+
+  function uploadNews() {
+    const title = document.getElementById("title").value;
+    const description = document.getElementById("description").value;
+
+    if (!selectedFile) {
+      alert("Select image first");
+      return;
+    }
+
+    const storageRef = storage.ref("news/" + selectedFile.name);
+
+    storageRef.put(selectedFile).then(snapshot => {
+      snapshot.ref.getDownloadURL().then(url => {
+
+        db.collection("news").add({
+          title: title,
+          description: description,
+          image: url,
+          createdAt: new Date()
+        });
+
+        alert("News Published!");
+        location.reload();
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
