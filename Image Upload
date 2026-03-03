@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .upload-box {
+            border: 2px dashed #999;
+            padding: 20px;
+            width: 300px;
+            margin: auto;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 100%;
+            display: none;
+        }
+        button {
+            margin-top: 10px;
+            padding: 8px 15px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Upload News Image</h2>
+
+<div class="upload-box">
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+    <button onclick="previewImage()">Preview</button>
+    <img id="preview">
+</div>
+
+<script>
+function previewImage() {
+    const input = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+
+    const file = input.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+        }
+        reader.readAsDataURL(file);
+    } else {
+        alert("Please select an image first.");
+    }
+}
+</script>
+
+</body>
+</html>
